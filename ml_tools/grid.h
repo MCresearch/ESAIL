@@ -1,7 +1,9 @@
 #ifndef GRID_H
 #define GRID_H
 
+#include <string>
 #include <torch/torch.h>
+#include <vector>
 
 class Grid
 {

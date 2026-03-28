@@ -1,7 +1,9 @@
 #ifndef KERNEL_H
 #define KERNEL_H
 
+#include <string>
 #include <torch/torch.h>
+#include <vector>
 
 class Kernel
 {

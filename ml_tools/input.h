@@ -1,8 +1,10 @@
 #ifndef INPUT_H
 #define INPUT_H
 
-#include <torch/torch.h>
-#include <limits> 
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <limits>
 
 class Input
 {

@@ -8,7 +8,11 @@
 #include "./nn_of.h"
 #include "./pauli_potential.h"
 
+#include <cmath>
+#include <memory>
+#include <string>
 #include <torch/torch.h>
+#include <vector>
 
 class Train_KEDF
 {

@@ -1,7 +1,11 @@
 #ifndef PAULI_POTENTIAL_H
 #define PAULI_POTENTIAL_H
 
+#include <cmath>
+#include <map>
+#include <string>
 #include <torch/torch.h>
+#include <vector>
 #include "./input.h"
 #include "./data.h"
 #include "./kernel.h"

@@ -3,7 +3,10 @@
 
 #include "./input.h"
 
+#include <cmath>
+#include <string>
 #include <torch/torch.h>
+#include <vector>
 
 class Data
 {
