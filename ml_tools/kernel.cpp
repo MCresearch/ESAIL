@@ -1,4 +1,5 @@
 #include "./kernel.h"
+#include <fstream>
 
 void Kernel::fill_kernel(const int fftdim,
                          const int ndata,
