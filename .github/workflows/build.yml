@@ -51,9 +51,11 @@ jobs:
           TORCH_DIR: ${{ github.workspace }}/.cache/libtorch/${{ matrix.torch_variant }}/libtorch/share/cmake/Torch
         run: |
           set -e
-          cmake -S ml_tools -B ml_tools/build-${{ matrix.build_type }}-${{ matrix.torch_variant }} \
-            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
-            -DTorch_DIR="$TORCH_DIR"
+          CMAKE_ARGS="-DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DTorch_DIR=$TORCH_DIR"
+          if [ "${{ matrix.torch_variant }}" = "cu121" ]; then
+            CMAKE_ARGS="$CMAKE_ARGS -DCMAKE_CUDA_ARCHITECTURES=70;75;80;86"
+          fi
+          cmake -S ml_tools -B ml_tools/build-${{ matrix.build_type }}-${{ matrix.torch_variant }} $CMAKE_ARGS
 
       - name: Build
         run: |
