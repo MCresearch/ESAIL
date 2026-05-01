@@ -26,6 +26,13 @@ jobs:
           sudo apt-get update
           sudo apt-get -y install cuda-toolkit-12-1
 
+      - name: Configure CUDA environment
+        if: matrix.torch_variant == 'cu121'
+        run: |
+          set -e
+          echo "/usr/local/cuda/bin" >> "$GITHUB_PATH"
+          echo "CUDA_HOME=/usr/local/cuda" >> "$GITHUB_ENV"
+
       - name: Cache libtorch
         id: cache-libtorch
         uses: actions/cache@v4
@@ -51,9 +58,12 @@ jobs:
           TORCH_DIR: ${{ github.workspace }}/.cache/libtorch/${{ matrix.torch_variant }}/libtorch/share/cmake/Torch
         run: |
           set -e
-          cmake -S ml_tools -B ml_tools/build-${{ matrix.build_type }}-${{ matrix.torch_variant }} \
-            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
-            -DTorch_DIR="$TORCH_DIR"
+          CMAKE_ARGS="-DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DTorch_DIR=$TORCH_DIR"
+          if [ "${{ matrix.torch_variant }}" = "cu121" ]; then
+            export TORCH_CUDA_ARCH_LIST="7.0;7.5;8.0;8.6"
+            CMAKE_ARGS="$CMAKE_ARGS -DCMAKE_CUDA_ARCHITECTURES=70;75;80;86 -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc"
+          fi
+          cmake -S ml_tools -B ml_tools/build-${{ matrix.build_type }}-${{ matrix.torch_variant }} $CMAKE_ARGS
 
       - name: Build
         run: |
