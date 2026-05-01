@@ -60,6 +60,7 @@ jobs:
           set -e
           CMAKE_ARGS="-DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DTorch_DIR=$TORCH_DIR"
           if [ "${{ matrix.torch_variant }}" = "cu121" ]; then
+            export TORCH_CUDA_ARCH_LIST="7.0;7.5;8.0;8.6"
             CMAKE_ARGS="$CMAKE_ARGS -DCMAKE_CUDA_ARCHITECTURES=70;75;80;86 -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc"
           fi
           cmake -S ml_tools -B ml_tools/build-${{ matrix.build_type }}-${{ matrix.torch_variant }} $CMAKE_ARGS
