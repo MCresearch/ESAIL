@@ -1,0 +1,61 @@
+name: Build ml_tools
+
+on:
+  pull_request:
+  push:
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        build_type: [Debug, Release]
+        torch_variant: [cpu, cu121]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install CUDA Toolkit 12.1
+        if: matrix.torch_variant == 'cu121'
+        run: |
+          set -e
+          wget -q https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
+          sudo dpkg -i cuda-keyring_1.1-1_all.deb
+          sudo apt-get update
+          sudo apt-get -y install cuda-toolkit-12-1
+
+      - name: Cache libtorch
+        id: cache-libtorch
+        uses: actions/cache@v4
+        with:
+          path: .cache/libtorch/${{ matrix.torch_variant }}
+          key: libtorch-2.2.0-${{ matrix.torch_variant }}-${{ runner.os }}
+
+      - name: Download libtorch
+        if: steps.cache-libtorch.outputs.cache-hit != 'true'
+        run: |
+          set -e
+          mkdir -p .cache/libtorch/${{ matrix.torch_variant }}
+          if [ "${{ matrix.torch_variant }}" = "cpu" ]; then
+            URL="https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-2.2.0%2Bcpu.zip"
+          else
+            URL="https://download.pytorch.org/libtorch/cu121/libtorch-cxx11-abi-shared-with-deps-2.2.0%2Bcu121.zip"
+          fi
+          curl -L "$URL" -o /tmp/libtorch.zip
+          unzip -q /tmp/libtorch.zip -d .cache/libtorch/${{ matrix.torch_variant }}
+
+      - name: Configure
+        env:
+          TORCH_DIR: ${{ github.workspace }}/.cache/libtorch/${{ matrix.torch_variant }}/libtorch/share/cmake/Torch
+        run: |
+          set -e
+          cmake -S ml_tools -B ml_tools/build-${{ matrix.build_type }}-${{ matrix.torch_variant }} \
+            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+            -DTorch_DIR="$TORCH_DIR"
+
+      - name: Build
+        run: |
+          set -e
+          cmake --build ml_tools/build-${{ matrix.build_type }}-${{ matrix.torch_variant }} -j
